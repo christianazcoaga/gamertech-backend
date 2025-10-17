@@ -45,14 +45,14 @@ public class UserService {
     }
     
     public UserDTO createUser(UserRequest request) {
-        // Validate unique email
+        // Validar email único
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists: " + request.getEmail());
+            throw new IllegalArgumentException("El correo ya existe: " + request.getEmail());
         }
         
-        // Validate unique username
+        // Validar nombre de usuario único
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username already exists: " + request.getUsername());
+            throw new IllegalArgumentException("El nombre de usuario ya existe: " + request.getUsername());
         }
         
         User user = new User();
@@ -70,14 +70,14 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
         
-        // Validate unique email (if changed)
+        // Validar email único (si se cambió)
         if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already exists: " + request.getEmail());
+            throw new IllegalArgumentException("El correo ya existe: " + request.getEmail());
         }
         
-        // Validate unique username (if changed)
+        // Validar nombre de usuario único (si se cambió)
         if (!user.getUsername().equals(request.getUsername()) && userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username already exists: " + request.getUsername());
+            throw new IllegalArgumentException("El nombre de usuario ya existe: " + request.getUsername());
         }
         
         user.setUsername(request.getUsername());

@@ -6,26 +6,26 @@ import jakarta.validation.constraints.NotNull;
 
 public class ProductRequest {
     
-    @NotBlank(message = "Product name is required")
+    @NotBlank(message = "El nombre del producto es obligatorio")
     private String name;
     
-    @NotBlank(message = "Category is required")
+    @NotBlank(message = "La categoría es obligatoria")
     private String category;
     
-    @NotBlank(message = "Description is required")
+    @NotBlank(message = "La descripción es obligatoria")
     private String description;
     
-    @NotNull(message = "Price is required")
-    @Min(value = 0, message = "Price must be greater than or equal to 0")
+    @NotNull(message = "El precio es obligatorio")
+    @Min(value = 0, message = "El precio debe ser mayor o igual a 0")
     private Double price;
     
-    @NotNull(message = "Stock is required")
-    @Min(value = 0, message = "Stock must be greater than or equal to 0")
+    @NotNull(message = "El stock es obligatorio")
+    @Min(value = 0, message = "El stock debe ser mayor o igual a 0")
     private Integer stock;
     
     private String image;
     
-    @NotNull(message = "User ID is required")
+    @NotNull(message = "El ID del usuario es obligatorio")
     private Long userId;
     
     // Constructors

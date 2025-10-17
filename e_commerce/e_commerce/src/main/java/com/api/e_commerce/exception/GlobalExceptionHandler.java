@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
         });
         
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("error", "Validation failed");
+        errorResponse.put("error", "Validación fallida");
         errorResponse.put("fields", fieldErrors);
         errorResponse.put("timestamp", LocalDateTime.now().toString());
         errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGlobalException(Exception ex) {
         Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("error", "Internal server error: " + ex.getMessage());
+        errorResponse.put("error", "Error interno del servidor: " + ex.getMessage());
         errorResponse.put("timestamp", LocalDateTime.now().toString());
         errorResponse.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
         

@@ -75,7 +75,7 @@ public class ProductController {
     public ResponseEntity<ProductDTO> updateStock(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
         Integer newStock = body.get("stock");
         if (newStock == null) {
-            throw new IllegalArgumentException("Stock value is required");
+            throw new IllegalArgumentException("El valor de stock es obligatorio");
         }
         ProductDTO updatedProduct = productService.updateStock(id, newStock);
         return ResponseEntity.ok(updatedProduct);

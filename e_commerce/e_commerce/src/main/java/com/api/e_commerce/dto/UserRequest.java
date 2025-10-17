@@ -6,21 +6,21 @@ import jakarta.validation.constraints.Size;
 
 public class UserRequest {
     
-    @NotBlank(message = "Username is required")
+    @NotBlank(message = "El nombre de usuario es obligatorio")
     private String username;
     
-    @Email(message = "Email must be valid")
-    @NotBlank(message = "Email is required")
+    @Email(message = "El correo debe ser válido")
+    @NotBlank(message = "El correo es obligatorio")
     private String email;
     
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters long")
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
     
-    @NotBlank(message = "Name is required")
+    @NotBlank(message = "El nombre es obligatorio")
     private String name;
     
-    @NotBlank(message = "Apellido is required")
+    @NotBlank(message = "El apellido es obligatorio")
     private String apellido;
     
     // Constructors

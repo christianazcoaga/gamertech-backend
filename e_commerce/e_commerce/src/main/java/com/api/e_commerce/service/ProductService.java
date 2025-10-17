@@ -61,8 +61,8 @@ public class ProductService {
     }
     
     public ProductDTO createProduct(ProductRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
+    User user = userRepository.findById(request.getUserId())
+        .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
         
         Product product = new Product();
         product.setName(request.getName());
@@ -81,12 +81,12 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         
-        // Verificar si el usuario existe si se cambia
-        if (!product.getUser().getId().equals(request.getUserId())) {
-            User user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
-            product.setUser(user);
-        }
+    // Verificar si el usuario existe si se cambia
+    if (!product.getUser().getId().equals(request.getUserId())) {
+        User user = userRepository.findById(request.getUserId())
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
+        product.setUser(user);
+    }
         
         product.setName(request.getName());
         product.setCategory(request.getCategory());
@@ -104,7 +104,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         
         if (newStock < 0) {
-            throw new IllegalArgumentException("Stock cannot be negative");
+            throw new IllegalArgumentException("El stock no puede ser negativo");
         }
         
         product.setStock(newStock);
