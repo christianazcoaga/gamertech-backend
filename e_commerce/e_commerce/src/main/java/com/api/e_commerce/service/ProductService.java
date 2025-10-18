@@ -141,7 +141,7 @@ public class ProductService {
                 product.getStock(),
                 product.getImage(),
                 product.getUser().getId(),
-                product.getUser().getUsername(),
+                product.getUser().getUsernameField(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );

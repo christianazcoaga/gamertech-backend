@@ -1,13 +1,18 @@
 package com.api.e_commerce.model;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -58,7 +63,7 @@ public class User {
         this.id = id;
     }
     
-    public String getUsername() {
+    public String getUsernameField() {
         return username;
     }
     
@@ -72,10 +77,6 @@ public class User {
     
     public void setEmail(String email) {
         this.email = email;
-    }
-    
-    public String getPassword() {
-        return password;
     }
     
     public void setPassword(String password) {
@@ -123,5 +124,43 @@ public class User {
     public void removeProduct(Product product) {
         products.remove(product);
         product.setUser(null);
+    }
+    
+    // Implementación de UserDetails para Spring Security
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // Por ahora, todos los usuarios tienen el rol USER
+        // Puedes agregar roles dinámicos en el futuro
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+    
+    @Override
+    public String getPassword() {
+        return password;
+    }
+    
+    @Override
+    public String getUsername() {
+        return email; // Usamos email como username para login
+    }
+    
+    @Override
+    public boolean isAccountNonExpired() {
+        return true; // La cuenta nunca expira
+    }
+    
+    @Override
+    public boolean isAccountNonLocked() {
+        return true; // La cuenta nunca se bloquea
+    }
+    
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true; // Las credenciales nunca expiran
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return true; // La cuenta siempre está habilitada
     }
 }

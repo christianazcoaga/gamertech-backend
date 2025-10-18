@@ -6,6 +6,7 @@ import com.api.e_commerce.exception.ResourceNotFoundException;
 import com.api.e_commerce.model.User;
 import com.api.e_commerce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,10 +18,12 @@ import java.util.stream.Collectors;
 public class UserService {
     
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     
     @Autowired
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
     
     @Transactional(readOnly = true)
@@ -58,7 +61,7 @@ public class UserService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // Sin hashear por ahora
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Encriptar contraseña con BCrypt
         user.setName(request.getName());
         user.setApellido(request.getApellido());
         
@@ -76,13 +79,13 @@ public class UserService {
         }
         
         // Validar nombre de usuario único (si se cambió)
-        if (!user.getUsername().equals(request.getUsername()) && userRepository.existsByUsername(request.getUsername())) {
+        if (!user.getUsernameField().equals(request.getUsername()) && userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("El nombre de usuario ya existe: " + request.getUsername());
         }
         
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Encriptar contraseña al actualizar
         user.setName(request.getName());
         user.setApellido(request.getApellido());
         
@@ -100,7 +103,7 @@ public class UserService {
     private UserDTO mapToDTO(User user) {
         return new UserDTO(
                 user.getId(),
-                user.getUsername(),
+                user.getUsernameField(),
                 user.getEmail(),
                 user.getName(),
                 user.getApellido(),
