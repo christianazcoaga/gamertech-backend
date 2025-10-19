@@ -4,6 +4,7 @@ import com.api.e_commerce.dto.AuthenticationResponse;
 import com.api.e_commerce.dto.LoginRequest;
 import com.api.e_commerce.dto.RegisterRequest;
 import com.api.e_commerce.dto.UserDTO;
+import com.api.e_commerce.model.Role;
 import com.api.e_commerce.model.User;
 import com.api.e_commerce.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -48,6 +49,7 @@ public class AuthenticationService {
         user.setPassword(passwordEncoder.encode(request.getPassword())); // Encriptar contraseña
         user.setName(request.getName());
         user.setApellido(request.getApellido());
+        user.setRole(Role.USER); // Asignar rol USER por defecto a nuevos usuarios
         
         // Guardar usuario
         User savedUser = userRepository.save(user);
@@ -85,6 +87,7 @@ public class AuthenticationService {
             user.getEmail(),
             user.getName(),
             user.getApellido(),
+            user.getRole(),
             user.getCreatedAt()
         );
     }

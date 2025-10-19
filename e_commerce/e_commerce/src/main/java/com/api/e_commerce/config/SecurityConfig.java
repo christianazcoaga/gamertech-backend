@@ -1,8 +1,8 @@
 package com.api.e_commerce.config;
 
-import com.api.e_commerce.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,20 +16,25 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
     
-    private final CustomUserDetailsService userDetailsService;
-    
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
-    
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // Endpoints de autenticación públicos
-                .requestMatchers("/h2-console/**").permitAll() // Permitir acceso a consola H2
-                .requestMatchers("/api/**").authenticated() // Resto de endpoints requieren autenticación
+                // Endpoints públicos
+                .requestMatchers("/api/auth/**").permitAll() // Registro y login públicos
+                .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll() // Consulta de productos pública
+                .requestMatchers("/h2-console/**").permitAll() // Consola H2
+                
+                // Endpoints que requieren autenticación
+                .requestMatchers(HttpMethod.POST, "/api/productos/**").authenticated() // Crear productos requiere autenticación
+                .requestMatchers(HttpMethod.PUT, "/api/productos/**").authenticated() // Actualizar productos requiere autenticación
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/**").authenticated() // Eliminar productos requiere autenticación
+                
+                // Endpoints que requieren rol ADMIN
+                .requestMatchers("/api/admin/**").hasRole("ADMIN") // Solo administradores
+                
+                // Cualquier otro endpoint requiere autenticación
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

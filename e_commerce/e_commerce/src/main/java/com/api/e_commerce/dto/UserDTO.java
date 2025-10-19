@@ -1,5 +1,6 @@
 package com.api.e_commerce.dto;
 
+import com.api.e_commerce.model.Role;
 import java.time.LocalDateTime;
 
 public class UserDTO {
@@ -9,18 +10,20 @@ public class UserDTO {
     private String email;
     private String name;
     private String apellido;
+    private Role role;
     private LocalDateTime createdAt;
     
     // Constructors
     public UserDTO() {
     }
     
-    public UserDTO(Long id, String username, String email, String name, String apellido, LocalDateTime createdAt) {
+    public UserDTO(Long id, String username, String email, String name, String apellido, Role role, LocalDateTime createdAt) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.name = name;
         this.apellido = apellido;
+        this.role = role;
         this.createdAt = createdAt;
     }
     
@@ -63,6 +66,14 @@ public class UserDTO {
     
     public void setApellido(String apellido) {
         this.apellido = apellido;
+    }
+    
+    public Role getRole() {
+        return role;
+    }
+    
+    public void setRole(Role role) {
+        this.role = role;
     }
     
     public LocalDateTime getCreatedAt() {

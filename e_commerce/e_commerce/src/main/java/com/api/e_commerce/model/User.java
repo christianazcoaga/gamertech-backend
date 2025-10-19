@@ -31,6 +31,10 @@ public class User implements UserDetails {
     
     private String apellido;
     
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+    
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
@@ -99,6 +103,14 @@ public class User implements UserDetails {
         this.apellido = apellido;
     }
     
+    public Role getRole() {
+        return role;
+    }
+    
+    public void setRole(Role role) {
+        this.role = role;
+    }
+    
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -129,9 +141,8 @@ public class User implements UserDetails {
     // Implementación de UserDetails para Spring Security
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Por ahora, todos los usuarios tienen el rol USER
-        // Puedes agregar roles dinámicos en el futuro
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        // Retorna el rol del usuario con el prefijo ROLE_ requerido por Spring Security
+        return List.of(new SimpleGrantedAuthority("ROLE_" + (role != null ? role.name() : "USER")));
     }
     
     @Override

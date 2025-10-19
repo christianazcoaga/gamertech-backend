@@ -107,6 +107,7 @@ public class UserService {
                 user.getEmail(),
                 user.getName(),
                 user.getApellido(),
+                user.getRole(),
                 user.getCreatedAt()
         );
     }
