@@ -9,8 +9,10 @@ public class ProductRequest {
     @NotBlank(message = "El nombre del producto es obligatorio")
     private String name;
     
-    @NotBlank(message = "La categoría es obligatoria")
-    private String category;
+    // --- CORREGIDO ---
+    // Ya no es un String, es el ID de la categoría.
+    @NotNull(message = "El ID de la categoría es obligatorio")
+    private Long categoryId;
     
     @NotBlank(message = "La descripción es obligatoria")
     private String description;
@@ -32,10 +34,11 @@ public class ProductRequest {
     public ProductRequest() {
     }
     
-    public ProductRequest(String name, String category, String description, Double price, 
+    // --- CONSTRUCTOR CORREGIDO ---
+    public ProductRequest(String name, Long categoryId, String description, Double price, 
                          Integer stock, String image, Long userId) {
         this.name = name;
-        this.category = category;
+        this.categoryId = categoryId; // Corregido
         this.description = description;
         this.price = price;
         this.stock = stock;
@@ -52,12 +55,13 @@ public class ProductRequest {
         this.name = name;
     }
     
-    public String getCategory() {
-        return category;
+    // --- GETTER Y SETTER CORREGIDOS ---
+    public Long getCategoryId() {
+        return categoryId;
     }
     
-    public void setCategory(String category) {
-        this.category = category;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
     
     public String getDescription() {

@@ -13,9 +13,12 @@ public class Product {
     
     @Column(nullable = false)
     private String name;
-    
-    @Column(nullable = false)
-    private String category;
+
+    // --- Relación ---
+    // Muchos Productos pueden pertenecer a una Categoría.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category; // <--- ¡Perfecto! Esto está bien.
     
     @Column(length = 1000)
     private String description;
@@ -53,7 +56,9 @@ public class Product {
     public Product() {
     }
     
-    public Product(String name, String category, String description, Double price, Integer stock, String image) {
+    // --- CONSTRUCTOR CORREGIDO ---
+    // Cambié el parámetro "String category" por "Category category"
+    public Product(String name, Category category, String description, Double price, Integer stock, String image) {
         this.name = name;
         this.category = category;
         this.description = description;
@@ -62,7 +67,7 @@ public class Product {
         this.image = image;
     }
     
-    // Getters and Setters
+    // --- Getters and Setters ---
     public Long getId() {
         return id;
     }
@@ -78,12 +83,14 @@ public class Product {
     public void setName(String name) {
         this.name = name;
     }
-    
-    public String getCategory() {
+
+    // --- GETTER Y SETTER AÑADIDOS ---
+    // Estos eran los que te faltaban
+    public Category getCategory() {
         return category;
     }
-    
-    public void setCategory(String category) {
+
+    public void setCategory(Category category) {
         this.category = category;
     }
     

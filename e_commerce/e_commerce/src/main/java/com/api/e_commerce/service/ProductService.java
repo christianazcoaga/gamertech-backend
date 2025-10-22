@@ -3,8 +3,10 @@ package com.api.e_commerce.service;
 import com.api.e_commerce.dto.ProductDTO;
 import com.api.e_commerce.dto.ProductRequest;
 import com.api.e_commerce.exception.ResourceNotFoundException;
+import com.api.e_commerce.model.Category; // <-- IMPORTANTE
 import com.api.e_commerce.model.Product;
 import com.api.e_commerce.model.User;
+import com.api.e_commerce.repository.CategoryRepository; // <-- IMPORTANTE
 import com.api.e_commerce.repository.ProductRepository;
 import com.api.e_commerce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +22,13 @@ public class ProductService {
     
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
-    
+    private final CategoryRepository categoryRepository; // <-- 1. AÑADIDO
+
     @Autowired
-    public ProductService(ProductRepository productRepository, UserRepository userRepository) {
+    public ProductService(ProductRepository productRepository, UserRepository userRepository, CategoryRepository categoryRepository) { // <-- 2. AÑADIDO
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository; // <-- 3. AÑADIDO
     }
     
     @Transactional(readOnly = true)
@@ -42,8 +46,9 @@ public class ProductService {
     }
     
     @Transactional(readOnly = true)
-    public List<ProductDTO> getProductsByCategory(String category) {
-        return productRepository.findByCategory(category).stream()
+    public List<ProductDTO> getProductsByCategory(String categoryName) { // <-- 4. CORREGIDO
+        // Asume que en ProductRepository cambiaste el método a "findByCategory_Name"
+        return productRepository.findByCategory_Name(categoryName).stream() // <-- 5. CORREGIDO
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -56,17 +61,25 @@ public class ProductService {
     }
     
     @Transactional(readOnly = true)
-    public List<String> getCategories() {
-        return productRepository.findAllCategories();
+    public List<String> getCategories() { // <-- 6. CORREGIDO
+        // Ahora busca en el repositorio de categorías y devuelve solo los nombres
+        return categoryRepository.findAll().stream()
+                .map(Category::getName)
+                .collect(Collectors.toList());
     }
     
     public ProductDTO createProduct(ProductRequest request) {
-    User user = userRepository.findById(request.getUserId())
-        .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
         
+        // --- 7. CORREGIDO ---
+        // Asumimos que "ProductRequest" ahora tiene un campo "getCategoryId()" que devuelve un Long
+        Category category = categoryRepository.findById(request.getCategoryId()) 
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + request.getCategoryId()));
+
         Product product = new Product();
         product.setName(request.getName());
-        product.setCategory(request.getCategory());
+        product.setCategory(category); // <-- Se pasa el objeto Categoría, no un String
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
@@ -81,15 +94,22 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         
-    // Verificar si el usuario existe si se cambia
-    if (!product.getUser().getId().equals(request.getUserId())) {
-        User user = userRepository.findById(request.getUserId())
-            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
-        product.setUser(user);
-    }
+        // Verificar si el usuario existe si se cambia
+        if (!product.getUser().getId().equals(request.getUserId())) {
+            User user = userRepository.findById(request.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
+            product.setUser(user);
+        }
+
+        // --- 8. CORREGIDO ---
+        // Asumimos que "ProductRequest" ahora tiene un campo "getCategoryId()" que devuelve un Long
+        if (!product.getCategory().getId().equals(request.getCategoryId())) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + request.getCategoryId()));
+            product.setCategory(category); // <-- Se pasa el objeto Categoría
+        }
         
         product.setName(request.getName());
-        product.setCategory(request.getCategory());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
@@ -135,13 +155,13 @@ public class ProductService {
         return new ProductDTO(
                 product.getId(),
                 product.getName(),
-                product.getCategory(),
+                product.getCategory().getName(), // <-- 9. CORREGIDO (Obtiene el nombre)
                 product.getDescription(),
                 product.getPrice(),
                 product.getStock(),
                 product.getImage(),
                 product.getUser().getId(),
-                product.getUser().getUsernameField(),
+                product.getUser().getUsername(), // <-- 10. CORREGIDO (Asumo que es getUsername())
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );
