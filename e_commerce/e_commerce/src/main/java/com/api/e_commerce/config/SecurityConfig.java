@@ -26,10 +26,18 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll() // Consulta de productos pública
                 .requestMatchers("/h2-console/**").permitAll() // Consola H2
                 
-                // Endpoints que requieren autenticación
+                // Endpoints de productos que requieren autenticación
                 .requestMatchers(HttpMethod.POST, "/api/productos/**").authenticated() // Crear productos requiere autenticación
                 .requestMatchers(HttpMethod.PUT, "/api/productos/**").authenticated() // Actualizar productos requiere autenticación
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**").authenticated() // Eliminar productos requiere autenticación
+                
+                // Endpoints de pedidos
+                .requestMatchers(HttpMethod.POST, "/api/pedidos").authenticated() // Crear pedido requiere autenticación
+                .requestMatchers(HttpMethod.GET, "/api/pedidos/mis-pedidos").authenticated() // Ver mis pedidos
+                .requestMatchers(HttpMethod.PUT, "/api/pedidos/*/cancelar").authenticated() // Cancelar pedido
+                .requestMatchers(HttpMethod.GET, "/api/pedidos/**").hasRole("ADMIN") // Ver todos los pedidos (ADMIN)
+                .requestMatchers(HttpMethod.PUT, "/api/pedidos/*/estado").hasRole("ADMIN") // Actualizar estado (ADMIN)
+                .requestMatchers(HttpMethod.DELETE, "/api/pedidos/**").hasRole("ADMIN") // Eliminar pedidos (ADMIN)
                 
                 // Endpoints que requieren rol ADMIN
                 .requestMatchers("/api/admin/**").hasRole("ADMIN") // Solo administradores
