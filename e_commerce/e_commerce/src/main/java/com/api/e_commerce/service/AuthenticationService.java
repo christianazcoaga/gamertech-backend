@@ -22,13 +22,16 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
     
     public AuthenticationService(UserRepository userRepository, 
                                 PasswordEncoder passwordEncoder,
-                                AuthenticationManager authenticationManager) {
+                                AuthenticationManager authenticationManager,
+                                JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
     
     public AuthenticationResponse register(RegisterRequest request) {
@@ -54,9 +57,12 @@ public class AuthenticationService {
         // Guardar usuario
         User savedUser = userRepository.save(user);
         
+        // Generar token JWT
+        String jwtToken = jwtService.generateToken(savedUser);
+        
         // Crear respuesta
         UserDTO userDTO = mapToDTO(savedUser);
-        return new AuthenticationResponse("Usuario registrado exitosamente", userDTO);
+        return new AuthenticationResponse("Usuario registrado exitosamente", userDTO, jwtToken);
     }
     
     public AuthenticationResponse authenticate(LoginRequest request) {
@@ -71,9 +77,13 @@ public class AuthenticationService {
             
             // Si llega aquí, la autenticación fue exitosa
             User user = (User) authentication.getPrincipal();
+            
+            // Generar token JWT
+            String jwtToken = jwtService.generateToken(user);
+            
             UserDTO userDTO = mapToDTO(user);
             
-            return new AuthenticationResponse("Login exitoso", userDTO);
+            return new AuthenticationResponse("Login exitoso", userDTO, jwtToken);
             
         } catch (AuthenticationException e) {
             throw new IllegalArgumentException("Credenciales inválidas");

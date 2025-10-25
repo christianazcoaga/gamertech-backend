@@ -4,17 +4,29 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserDetailsService userDetailsService;
+    
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, UserDetailsService userDetailsService) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.userDetailsService = userDetailsService;
+    }
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -24,12 +36,18 @@ public class SecurityConfig {
                 // Endpoints públicos
                 .requestMatchers("/api/auth/**").permitAll() // Registro y login públicos
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll() // Consulta de productos pública
+                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // Consulta de categorías pública
                 .requestMatchers("/h2-console/**").permitAll() // Consola H2
                 
                 // Endpoints de productos que requieren autenticación
                 .requestMatchers(HttpMethod.POST, "/api/productos/**").authenticated() // Crear productos requiere autenticación
                 .requestMatchers(HttpMethod.PUT, "/api/productos/**").authenticated() // Actualizar productos requiere autenticación
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**").authenticated() // Eliminar productos requiere autenticación
+                
+                // Endpoints de categorías que requieren autenticación
+                .requestMatchers(HttpMethod.POST, "/api/categories/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/categories/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/categories/**").authenticated()
                 
                 // Endpoints de pedidos
                 .requestMatchers(HttpMethod.POST, "/api/pedidos").authenticated() // Crear pedido requiere autenticación
@@ -48,11 +66,21 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Sin sesiones, ideal para JWT
             )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .headers(headers -> headers
                 .frameOptions(frame -> frame.disable()) // Permitir frames para H2 console
             );
         
         return http.build();
+    }
+    
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        @SuppressWarnings("deprecation")
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(passwordEncoder());
+        authProvider.setUserDetailsService(userDetailsService);
+        return authProvider;
     }
     
     @Bean

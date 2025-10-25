@@ -4,6 +4,7 @@ public class AuthenticationResponse {
     
     private String message;
     private UserDTO user;
+    private String token;
     
     // Constructors
     public AuthenticationResponse() {
@@ -12,6 +13,12 @@ public class AuthenticationResponse {
     public AuthenticationResponse(String message, UserDTO user) {
         this.message = message;
         this.user = user;
+    }
+    
+    public AuthenticationResponse(String message, UserDTO user, String token) {
+        this.message = message;
+        this.user = user;
+        this.token = token;
     }
     
     // Getters and Setters
@@ -29,5 +36,13 @@ public class AuthenticationResponse {
     
     public void setUser(UserDTO user) {
         this.user = user;
+    }
+    
+    public String getToken() {
+        return token;
+    }
+    
+    public void setToken(String token) {
+        this.token = token;
     }
 }
