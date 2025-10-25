@@ -41,6 +41,11 @@ public class CategoryService {
     }
 
     public CategoryDTO createCategory(CategoryRequest categoryRequest) {
+        // Valida que no exista una categoría con el mismo nombre
+        categoryRepository.findByName(categoryRequest.getName()).ifPresent(existing -> {
+            throw new IllegalArgumentException("Ya existe una categoría con el nombre: " + categoryRequest.getName());
+        });
+        
         // Mapea del DTO a la Entidad
         Category category = new Category();
         category.setName(categoryRequest.getName());
@@ -58,11 +63,18 @@ public class CategoryService {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + id));
         
-        // 2. Actualiza los campos
+        // 2. Valida que el nuevo nombre no esté en uso por otra categoría
+        categoryRepository.findByName(categoryRequest.getName()).ifPresent(existing -> {
+            if (!existing.getId().equals(id)) {
+                throw new IllegalArgumentException("Ya existe otra categoría con el nombre: " + categoryRequest.getName());
+            }
+        });
+        
+        // 3. Actualiza los campos
         category.setName(categoryRequest.getName());
         category.setDescription(categoryRequest.getDescription());
 
-        // 3. Guarda (JPA sabe que es un update porque el objeto ya tiene ID)
+        // 4. Guarda (JPA sabe que es un update porque el objeto ya tiene ID)
         Category updatedCategory = categoryRepository.save(category);
 
         return mapToDTO(updatedCategory);
@@ -70,13 +82,16 @@ public class CategoryService {
 
     public void deleteCategory(Long id) {
         // 1. Verifica que existe
-        if (!categoryRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Categoría no encontrada con id: " + id);
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + id));
+        
+        // 2. Valida que no tenga productos asociados
+        if (category.getProducts() != null && !category.getProducts().isEmpty()) {
+            throw new IllegalStateException("No se puede eliminar la categoría porque tiene " + 
+                    category.getProducts().size() + " producto(s) asociado(s)");
         }
         
-        // 2. Borra
-        // OJO: Si tienes productos en esta categoría, esto podría fallar
-        // dependiendo de tu configuración de base de datos (restricción de llave foránea).
+        // 3. Borra
         categoryRepository.deleteById(id);
     }
 
