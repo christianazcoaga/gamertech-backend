@@ -15,6 +15,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @Transactional
 public class AuthenticationService {
@@ -57,8 +60,11 @@ public class AuthenticationService {
         // Guardar usuario
         User savedUser = userRepository.save(user);
         
-        // Generar token JWT
-        String jwtToken = jwtService.generateToken(savedUser);
+        // Generar token JWT con claims adicionales (incluye el rol)
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", savedUser.getRole().name());
+        extraClaims.put("userId", savedUser.getId());
+        String jwtToken = jwtService.generateToken(extraClaims, savedUser);
         
         // Crear respuesta
         UserDTO userDTO = mapToDTO(savedUser);
@@ -78,8 +84,11 @@ public class AuthenticationService {
             // Si llega aquí, la autenticación fue exitosa
             User user = (User) authentication.getPrincipal();
             
-            // Generar token JWT
-            String jwtToken = jwtService.generateToken(user);
+            // Generar token JWT con claims adicionales (incluye el rol)
+            Map<String, Object> extraClaims = new HashMap<>();
+            extraClaims.put("role", user.getRole().name());
+            extraClaims.put("userId", user.getId());
+            String jwtToken = jwtService.generateToken(extraClaims, user);
             
             UserDTO userDTO = mapToDTO(user);
             
