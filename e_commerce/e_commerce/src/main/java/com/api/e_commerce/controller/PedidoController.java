@@ -14,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/pedidos")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5137"}) // Configuración CORS por controlador
 public class PedidoController {
     
     private final PedidoService pedidoService;

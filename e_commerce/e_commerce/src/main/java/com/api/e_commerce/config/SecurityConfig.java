@@ -15,6 +15,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +35,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Aplica la configuración de CORS definida
             .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para APIs REST
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos
@@ -91,5 +96,33 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+    
+    /**
+     * Define la configuración global de CORS.
+     * Permite solicitudes desde tu frontend React.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // 1. Define los orígenes permitidos (Añade tu React Front-end)
+        // Sustituye con el origen exacto de tu frontend (ej: http://localhost:5173, http://127.0.0.1:5173)
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:5137", "http://127.0.0.1:5173"));
+        
+        // 2. Define los métodos HTTP permitidos
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        
+        // 3. Define las cabeceras (headers) permitidas (importante para Content-Type, Authorization, etc.)
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // 4. Permite el envío de credenciales (cookies, tokens de autorización, si aplica)
+        configuration.setAllowCredentials(true);
+        
+        // Define a qué rutas se aplica la configuración (/* = a todas las rutas)
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        
+        return source;
     }
 }
