@@ -27,7 +27,7 @@ public class ProductRequest {
     
     private String image;
     
-    @NotNull(message = "El ID del usuario es obligatorio")
+    // userId es opcional - si no se proporciona, se usa el usuario autenticado
     private Long userId;
     
     // Constructors

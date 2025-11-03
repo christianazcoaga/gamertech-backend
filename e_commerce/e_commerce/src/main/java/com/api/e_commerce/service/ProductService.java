@@ -10,6 +10,9 @@ import com.api.e_commerce.repository.CategoryRepository; // <-- IMPORTANTE
 import com.api.e_commerce.repository.ProductRepository;
 import com.api.e_commerce.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,8 +72,26 @@ public class ProductService {
     }
     
     public ProductDTO createProduct(ProductRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
+        // Obtener el usuario: si viene en el request, usarlo; si no, usar el usuario autenticado
+        User user;
+        
+        if (request.getUserId() != null) {
+            // Si se proporciona userId (por ejemplo, un ADMIN creando para otro usuario)
+            user = userRepository.findById(request.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
+        } else {
+            // Si no se proporciona, usar el usuario autenticado
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            if (authentication == null || !authentication.isAuthenticated()) {
+                throw new AccessDeniedException("Debes estar autenticado para crear un producto");
+            }
+            
+            // Obtener el username del UserDetails y buscar el usuario en la BD
+            String username = authentication.getName();
+            user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuario autenticado no encontrado"));
+        }
         
         // --- 7. CORREGIDO ---
         // Asumimos que "ProductRequest" ahora tiene un campo "getCategoryId()" que devuelve un Long
@@ -94,26 +115,20 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
         
-        // Verificar si el usuario existe si se cambia
-        if (!product.getUser().getId().equals(request.getUserId())) {
-            User user = userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + request.getUserId()));
-            product.setUser(user);
-        }
-
-        // --- 8. CORREGIDO ---
-        // Asumimos que "ProductRequest" ahora tiene un campo "getCategoryId()" que devuelve un Long
+        // Actualizar categoría si cambió
         if (!product.getCategory().getId().equals(request.getCategoryId())) {
             Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con id: " + request.getCategoryId()));
-            product.setCategory(category); // <-- Se pasa el objeto Categoría
+            product.setCategory(category);
         }
         
+        // Actualizar campos
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
         product.setImage(request.getImage());
+        // NO se cambia el usuario - el producto siempre pertenece al creador original
         
         Product updatedProduct = productRepository.save(product);
         return mapToDTO(updatedProduct);
@@ -133,9 +148,9 @@ public class ProductService {
     }
     
     public void deleteProduct(Long id) {
-        if (!productRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Product not found with id: " + id);
-        }
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        
         productRepository.deleteById(id);
     }
     

@@ -95,9 +95,7 @@ public class PedidoService {
             // Agregar item al pedido
             pedido.addItem(item);
             
-            // Actualizar stock del producto
-            producto.setStock(producto.getStock() - itemRequest.getCantidad());
-            productRepository.save(producto);
+            // NO descontamos el stock aquí - se descontará al CONFIRMAR el pedido
         }
         
         // Guardar pedido
@@ -110,13 +108,34 @@ public class PedidoService {
         Pedido pedido = pedidoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado con ID: " + id));
         
+        EstadoPedido estadoAnterior = pedido.getEstado();
+        
         // Validar transición de estado
-        if (pedido.getEstado() == EstadoPedido.CANCELADO) {
+        if (estadoAnterior == EstadoPedido.CANCELADO) {
             throw new IllegalArgumentException("No se puede modificar un pedido cancelado");
         }
         
-        if (pedido.getEstado() == EstadoPedido.ENTREGADO && nuevoEstado != EstadoPedido.ENTREGADO) {
+        if (estadoAnterior == EstadoPedido.ENTREGADO && nuevoEstado != EstadoPedido.ENTREGADO) {
             throw new IllegalArgumentException("No se puede modificar un pedido ya entregado");
+        }
+        
+        // Si el pedido pasa de PENDIENTE a CONFIRMADO, descontar stock
+        if (estadoAnterior == EstadoPedido.PENDIENTE && nuevoEstado == EstadoPedido.CONFIRMADO) {
+            for (PedidoItem item : pedido.getItems()) {
+                Product producto = item.getProducto();
+                
+                // Validar stock disponible nuevamente
+                if (producto.getStock() < item.getCantidad()) {
+                    throw new IllegalArgumentException(
+                            "Stock insuficiente para confirmar el pedido. Producto: " + producto.getName() + 
+                            ". Stock disponible: " + producto.getStock() + 
+                            ". Cantidad solicitada: " + item.getCantidad());
+                }
+                
+                // Descontar stock
+                producto.setStock(producto.getStock() - item.getCantidad());
+                productRepository.save(producto);
+            }
         }
         
         pedido.setEstado(nuevoEstado);
@@ -186,10 +205,13 @@ public class PedidoService {
     
     // Mapear PedidoItem a PedidoItemDTO
     private PedidoItemDTO mapItemToDTO(PedidoItem item) {
+        Product producto = item.getProducto();
         return new PedidoItemDTO(
                 item.getId(),
-                item.getProducto().getId(),
-                item.getProducto().getName(),
+                producto.getId(),
+                producto.getName(),
+                producto.getImage(),
+                producto.getCategory().getName(),
                 item.getCantidad(),
                 item.getPrecioUnitario(),
                 item.getSubtotal()

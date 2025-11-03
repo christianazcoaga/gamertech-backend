@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -22,6 +23,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
     
     private final JwtAuthenticationFilter jwtAuthFilter;
@@ -40,19 +42,20 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos
                 .requestMatchers("/api/auth/**").permitAll() // Registro y login públicos
-                .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll() // Consulta de productos pública
+                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Consulta de productos pública
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // Consulta de categorías pública
                 .requestMatchers("/h2-console/**").permitAll() // Consola H2
                 
-                // Endpoints de productos que requieren autenticación
-                .requestMatchers(HttpMethod.POST, "/api/productos/**").authenticated() // Crear productos requiere autenticación
-                .requestMatchers(HttpMethod.PUT, "/api/productos/**").authenticated() // Actualizar productos requiere autenticación
-                .requestMatchers(HttpMethod.DELETE, "/api/productos/**").authenticated() // Eliminar productos requiere autenticación
+                // Endpoints de productos
+                .requestMatchers(HttpMethod.POST, "/api/products").authenticated() // Crear productos (USER y ADMIN)
+                .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated() // Editar productos (validación en servicio)
+                .requestMatchers(HttpMethod.PATCH, "/api/products/**").authenticated() // Actualizar stock (validación en servicio)
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated() // Eliminar productos (validación en servicio)
                 
-                // Endpoints de categorías que requieren autenticación
-                .requestMatchers(HttpMethod.POST, "/api/categories/**").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/api/categories/**").authenticated()
-                .requestMatchers(HttpMethod.DELETE, "/api/categories/**").authenticated()
+                // Endpoints de categorías (solo ADMIN)
+                .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/categories/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
                 
                 // Endpoints de pedidos
                 .requestMatchers(HttpMethod.POST, "/api/pedidos").authenticated() // Crear pedido requiere autenticación
@@ -82,8 +85,7 @@ public class SecurityConfig {
     
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

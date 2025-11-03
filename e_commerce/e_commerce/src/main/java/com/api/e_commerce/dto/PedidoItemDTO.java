@@ -7,6 +7,8 @@ public class PedidoItemDTO {
     private Long id;
     private Long productoId;
     private String productoNombre;
+    private String productoImagen;
+    private String productoCategoria;
     private Integer cantidad;
     private BigDecimal precioUnitario;
     private BigDecimal subtotal;
@@ -15,11 +17,14 @@ public class PedidoItemDTO {
     public PedidoItemDTO() {
     }
     
-    public PedidoItemDTO(Long id, Long productoId, String productoNombre, Integer cantidad, 
+    public PedidoItemDTO(Long id, Long productoId, String productoNombre, String productoImagen,
+                         String productoCategoria, Integer cantidad, 
                          BigDecimal precioUnitario, BigDecimal subtotal) {
         this.id = id;
         this.productoId = productoId;
         this.productoNombre = productoNombre;
+        this.productoImagen = productoImagen;
+        this.productoCategoria = productoCategoria;
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
         this.subtotal = subtotal;
@@ -48,6 +53,22 @@ public class PedidoItemDTO {
     
     public void setProductoNombre(String productoNombre) {
         this.productoNombre = productoNombre;
+    }
+    
+    public String getProductoImagen() {
+        return productoImagen;
+    }
+    
+    public void setProductoImagen(String productoImagen) {
+        this.productoImagen = productoImagen;
+    }
+    
+    public String getProductoCategoria() {
+        return productoCategoria;
+    }
+    
+    public void setProductoCategoria(String productoCategoria) {
+        this.productoCategoria = productoCategoria;
     }
     
     public Integer getCantidad() {

@@ -3,23 +3,24 @@
 ## 📑 Tabla de Contenidos
 
 1. [Base URL](#-base-url)
-2. [Configuración de CORS](#-configuración-de-cors)
-3. [Autenticación](#-autenticación)
-4. [Endpoints API](#-endpoints-api)
+2. [Resumen de Endpoints](#-resumen-de-endpoints)
+3. [Configuración de CORS](#-configuración-de-cors)
+4. [Autenticación](#-autenticación)
+5. [Endpoints API Detallados](#-endpoints-api-detallados)
    - [Autenticación (`/api/auth`)](#1-autenticación-apiauth)
    - [Categorías (`/api/categories`)](#2-categorías-apicategories)
-   - [Productos (`/api/productos`)](#3-productos-apiproductos)
+   - [Productos (`/api/products`)](#3-productos-apiproducts)
    - [Pedidos (`/api/pedidos`)](#4-pedidos-apipedidos)
-5. [Manejo del Token JWT](#-manejo-del-token-jwt)
-6. [Códigos de Estado HTTP](#-códigos-de-estado-http)
-7. [Solución de Problemas Comunes](#️-solución-de-problemas-comunes)
-8. [Formato de Errores](#️-formato-de-errores)
-9. [Ejemplos de Flujo Completo](#-ejemplo-de-flujo-completo)
-10. [Checklist de Integración](#-checklist-de-integración-frontend)
-11. [Configuración del Backend](#-configuración-del-backend)
-12. [Seguridad y Mejores Prácticas](#-seguridad-y-mejores-prácticas)
-13. [Recursos Adicionales](#-recursos-adicionales)
-14. [Soporte](#-soporte)
+6. [Manejo del Token JWT](#-manejo-del-token-jwt)
+7. [Códigos de Estado HTTP](#-códigos-de-estado-http)
+8. [Solución de Problemas Comunes](#️-solución-de-problemas-comunes)
+9. [Formato de Errores](#️-formato-de-errores)
+10. [Ejemplos de Flujo Completo](#-ejemplo-de-flujo-completo)
+11. [Checklist de Integración](#-checklist-de-integración-frontend)
+12. [Configuración del Backend](#-configuración-del-backend)
+13. [Seguridad y Mejores Prácticas](#-seguridad-y-mejores-prácticas)
+14. [Recursos Adicionales](#-recursos-adicionales)
+15. [Soporte](#-soporte)
 
 ---
 
@@ -27,6 +28,65 @@
 ```
 http://localhost:8080
 ```
+
+---
+
+## 📋 Resumen de Endpoints
+
+### 🔓 Endpoints Públicos (No requieren autenticación)
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `POST` | `/api/auth/register` | Registrar nuevo usuario |
+| `POST` | `/api/auth/login` | Iniciar sesión (obtener JWT) |
+| `GET` | `/api/products` | Listar todos los productos |
+| `GET` | `/api/products/{id}` | Obtener producto por ID |
+| `GET` | `/api/products/category/{category}` | Filtrar productos por categoría |
+| `GET` | `/api/categories` | Listar todas las categorías |
+| `GET` | `/api/categories/{id}` | Obtener categoría por ID |
+
+### 🔒 Endpoints Protegidos (Requieren autenticación)
+
+| Método | Endpoint | Rol | Descripción |
+|--------|----------|-----|-------------|
+| **PRODUCTOS** |
+| `POST` | `/api/products` | USER | Crear nuevo producto |
+| `PUT` | `/api/products/{id}` | USER | Actualizar producto |
+| `DELETE` | `/api/products/{id}` | USER | Eliminar producto |
+| **CATEGORÍAS** |
+| `POST` | `/api/categories` | USER | Crear nueva categoría |
+| `PUT` | `/api/categories/{id}` | USER | Actualizar categoría |
+| `DELETE` | `/api/categories/{id}` | USER | Eliminar categoría |
+| **PEDIDOS (Usuario)** |
+| `POST` | `/api/pedidos` | USER | Crear nuevo pedido |
+| `GET` | `/api/pedidos/mis-pedidos` | USER | Ver mis pedidos |
+| `PUT` | `/api/pedidos/{id}/cancelar` | USER | Cancelar mi pedido |
+| **PEDIDOS (Admin)** |
+| `GET` | `/api/pedidos` | ADMIN | Listar todos los pedidos |
+| `GET` | `/api/pedidos/{id}` | ADMIN | Obtener pedido por ID |
+| `GET` | `/api/pedidos/estado/{estado}` | ADMIN | Filtrar pedidos por estado |
+| `PUT` | `/api/pedidos/{id}/estado?estado={estado}` | ADMIN | Actualizar estado del pedido |
+| `DELETE` | `/api/pedidos/{id}` | ADMIN | Eliminar pedido |
+
+### 🔑 Headers Requeridos
+
+**Para endpoints públicos:**
+```http
+Content-Type: application/json
+```
+
+**Para endpoints protegidos:**
+```http
+Content-Type: application/json
+Authorization: Bearer <tu_token_jwt>
+```
+
+### 📊 Estados de Pedido Válidos
+- `PENDIENTE` - Pedido creado, esperando confirmación
+- `PROCESANDO` - Pedido en proceso
+- `ENVIADO` - Pedido enviado al cliente
+- `ENTREGADO` - Pedido entregado exitosamente
+- `CANCELADO` - Pedido cancelado
 
 ---
 
@@ -100,7 +160,7 @@ Authorization: Bearer <tu_token_jwt>
 
 ---
 
-## 📋 Endpoints API
+## 📋 Endpoints API Detallados
 
 ### 1. AUTENTICACIÓN (`/api/auth`)
 
@@ -351,10 +411,10 @@ No Content
 
 ---
 
-### 3. PRODUCTOS (`/api/productos`)
+### 3. PRODUCTOS (`/api/products`)
 
 #### 3.1 Obtener todos los productos
-**GET** `/api/productos`
+**GET** `/api/products`
 
 **Headers:**
 ```
@@ -365,7 +425,7 @@ Ninguno requerido (endpoint público)
 - `page` (int): Número de página (default: 0)
 - `size` (int): Tamaño de página (default: 10)
 
-**Ejemplo:** `/api/productos?page=0&size=20`
+**Ejemplo:** `/api/products?page=0&size=20`
 
 **Respuesta Exitosa (200):**
 ```json
@@ -390,7 +450,7 @@ Ninguno requerido (endpoint público)
 ---
 
 #### 3.2 Obtener producto por ID
-**GET** `/api/productos/{id}`
+**GET** `/api/products/{id}`
 
 **Headers:**
 ```
@@ -424,7 +484,7 @@ Ninguno requerido (endpoint público)
 ---
 
 #### 3.3 Crear producto
-**POST** `/api/productos`
+**POST** `/api/products`
 
 🔒 **Requiere autenticación**
 
@@ -478,7 +538,7 @@ Authorization: Bearer <token>
 ---
 
 #### 3.4 Actualizar producto
-**PUT** `/api/productos/{id}`
+**PUT** `/api/products/{id}`
 
 🔒 **Requiere autenticación**
 
@@ -529,7 +589,7 @@ Authorization: Bearer <token>
 ---
 
 #### 3.5 Eliminar producto
-**DELETE** `/api/productos/{id}`
+**DELETE** `/api/products/{id}`
 
 🔒 **Requiere autenticación**
 
@@ -549,6 +609,43 @@ No Content
 **Errores:**
 - `404` - Producto no encontrado
 - `401` - No autenticado
+
+---
+
+#### 3.6 Obtener productos por categoría
+**GET** `/api/products/category/{category}`
+
+**Headers:**
+```
+Ninguno requerido (endpoint público)
+```
+
+**URL Params:**
+- `category` (String): Nombre de la categoría
+
+**Ejemplo:** `/api/products/category/Hardware`
+
+**Respuesta Exitosa (200):**
+```json
+[
+  {
+    "id": 1,
+    "name": "RTX 4090",
+    "description": "Tarjeta gráfica gaming",
+    "price": 1599.99,
+    "stock": 10,
+    "image": "https://example.com/rtx4090.jpg",
+    "category": "Hardware",
+    "userId": 2,
+    "username": "vendedor123",
+    "createdAt": "2025-10-28T10:00:00",
+    "updatedAt": "2025-10-28T10:00:00"
+  }
+]
+```
+
+**Errores:**
+- `404` - No se encontraron productos para esa categoría
 
 ---
 
@@ -693,7 +790,83 @@ Authorization: Bearer <token>
 
 ---
 
-#### 4.4 Actualizar estado del pedido (ADMIN)
+#### 4.4 Obtener pedido por ID (ADMIN)
+**GET** `/api/pedidos/{id}`
+
+👑 **Requiere rol ADMIN**
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**URL Params:**
+- `id` (Long): ID del pedido
+
+**Respuesta Exitosa (200):**
+```json
+{
+  "id": 1,
+  "usuario": {
+    "id": 1,
+    "username": "johndoe",
+    "email": "john@example.com"
+  },
+  "fechaPedido": "2025-10-28T12:00:00",
+  "estado": "PENDIENTE",
+  "total": 3299.98,
+  "direccionEnvio": "Calle Falsa 123",
+  "items": [...]
+}
+```
+
+**Errores:**
+- `404` - Pedido no encontrado
+- `403` - No tiene rol ADMIN
+
+---
+
+#### 4.5 Obtener pedidos por estado (ADMIN)
+**GET** `/api/pedidos/estado/{estado}`
+
+👑 **Requiere rol ADMIN**
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**URL Params:**
+- `estado` (String): Estado del pedido
+
+**Ejemplo:** `/api/pedidos/estado/PENDIENTE`
+
+**Estados válidos:**
+- `PENDIENTE`
+- `PROCESANDO`
+- `ENVIADO`
+- `ENTREGADO`
+- `CANCELADO`
+
+**Respuesta Exitosa (200):**
+```json
+[
+  {
+    "id": 1,
+    "usuario": {...},
+    "estado": "PENDIENTE",
+    "total": 3299.98,
+    "items": [...]
+  }
+]
+```
+
+**Errores:**
+- `403` - No tiene rol ADMIN
+
+---
+
+#### 4.6 Actualizar estado del pedido (ADMIN)
 **PUT** `/api/pedidos/{id}/estado`
 
 👑 **Requiere rol ADMIN**
@@ -736,7 +909,7 @@ Authorization: Bearer <token>
 
 ---
 
-#### 4.5 Cancelar mi pedido
+#### 4.7 Cancelar mi pedido
 **PUT** `/api/pedidos/{id}/cancelar`
 
 🔒 **Requiere autenticación** (debe ser el dueño del pedido)
@@ -869,7 +1042,7 @@ has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is pres
 **Ejemplo de petición correcta desde React:**
 ```javascript
 // ✅ Correcto
-const response = await fetch('http://localhost:8080/api/productos', {
+const response = await fetch('http://localhost:8080/api/products', {
   method: 'GET',
   headers: {
     'Content-Type': 'application/json'
@@ -891,7 +1064,7 @@ const response = await fetch('http://localhost:8080/api/categories', {
 
 Si necesitas enviar cookies o credenciales:
 ```javascript
-fetch('http://localhost:8080/api/productos', {
+fetch('http://localhost:8080/api/products', {
   method: 'GET',
   credentials: 'include', // Incluye cookies
   headers: {
@@ -965,7 +1138,7 @@ const categoryResponse = await fetch('http://localhost:8080/api/categories', {
 const category = await categoryResponse.json();
 
 // 4. Obtener productos (público, sin token)
-const productsResponse = await fetch('http://localhost:8080/api/productos');
+const productsResponse = await fetch('http://localhost:8080/api/products');
 const products = await productsResponse.json();
 
 // 5. Crear pedido (con token)
@@ -1044,7 +1217,7 @@ async function ejemploCompleto() {
     });
     
     // 3. Obtener productos
-    const { data: products } = await api.get('/api/productos');
+    const { data: products } = await api.get('/api/products');
     
     // 4. Crear pedido
     const { data: order } = await api.post('/api/pedidos', {
@@ -1136,7 +1309,7 @@ Antes de comenzar a desarrollar tu frontend, verifica:
 
 - [ ] El backend está corriendo en `http://localhost:8080`
 - [ ] Tu frontend corre en un origen permitido (5173, 5137, etc.)
-- [ ] Puedes hacer una petición GET a `/api/productos` sin token
+- [ ] Puedes hacer una petición GET a `/api/products` sin token
 - [ ] El login retorna un token JWT válido
 - [ ] Puedes hacer peticiones autenticadas con el token en el header
 - [ ] Los errores de CORS no aparecen en la consola del navegador
@@ -1170,10 +1343,10 @@ java -jar target/e_commerce-0.0.1-SNAPSHOT.jar
 
 ```bash
 # Test simple con curl
-curl http://localhost:8080/api/productos
+curl http://localhost:8080/api/products
 
 # Test desde el navegador
-# Abre: http://localhost:8080/api/productos
+# Abre: http://localhost:8080/api/products
 ```
 
 ### Variables de Entorno (application.properties)
@@ -1220,17 +1393,17 @@ Para acceder a la consola H2 y ver los datos:
 1. **Nunca expongas el token en la URL**
    ```javascript
    // ❌ Incorrecto
-   fetch(`/api/productos?token=${token}`);
+   fetch(`/api/products?token=${token}`);
    
    // ✅ Correcto
-   fetch('/api/productos', {
+   fetch('/api/products', {
      headers: { 'Authorization': `Bearer ${token}` }
    });
    ```
 
 2. **Valida las respuestas**
    ```javascript
-   const response = await fetch('http://localhost:8080/api/productos');
+   const response = await fetch('http://localhost:8080/api/products');
    if (!response.ok) {
      throw new Error(`HTTP error! status: ${response.status}`);
    }
