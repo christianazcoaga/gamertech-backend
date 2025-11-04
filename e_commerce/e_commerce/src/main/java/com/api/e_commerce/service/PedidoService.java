@@ -119,6 +119,11 @@ public class PedidoService {
             throw new IllegalArgumentException("No se puede modificar un pedido ya entregado");
         }
         
+        // Si se intenta cancelar, no permitir cancelar pedidos entregados
+        if (nuevoEstado == EstadoPedido.CANCELADO && estadoAnterior == EstadoPedido.ENTREGADO) {
+            throw new IllegalArgumentException("No se puede cancelar un pedido ya entregado");
+        }
+        
         // Si el pedido pasa de PENDIENTE a CONFIRMADO, descontar stock
         if (estadoAnterior == EstadoPedido.PENDIENTE && nuevoEstado == EstadoPedido.CONFIRMADO) {
             for (PedidoItem item : pedido.getItems()) {
@@ -134,6 +139,16 @@ public class PedidoService {
                 
                 // Descontar stock
                 producto.setStock(producto.getStock() - item.getCantidad());
+                productRepository.save(producto);
+            }
+        }
+        
+        // Si el pedido se cancela desde CONFIRMADO o ENVIADO, devolver el stock
+        if (nuevoEstado == EstadoPedido.CANCELADO && 
+            (estadoAnterior == EstadoPedido.CONFIRMADO || estadoAnterior == EstadoPedido.ENVIADO)) {
+            for (PedidoItem item : pedido.getItems()) {
+                Product producto = item.getProducto();
+                producto.setStock(producto.getStock() + item.getCantidad());
                 productRepository.save(producto);
             }
         }
@@ -157,11 +172,13 @@ public class PedidoService {
             throw new IllegalArgumentException("El pedido ya está cancelado");
         }
         
-        // Devolver stock
-        for (PedidoItem item : pedido.getItems()) {
-            Product producto = item.getProducto();
-            producto.setStock(producto.getStock() + item.getCantidad());
-            productRepository.save(producto);
+        // Solo devolver stock si el pedido estaba CONFIRMADO o ENVIADO (estados donde ya se descontó el stock)
+        if (pedido.getEstado() == EstadoPedido.CONFIRMADO || pedido.getEstado() == EstadoPedido.ENVIADO) {
+            for (PedidoItem item : pedido.getItems()) {
+                Product producto = item.getProducto();
+                producto.setStock(producto.getStock() + item.getCantidad());
+                productRepository.save(producto);
+            }
         }
         
         // Cambiar estado

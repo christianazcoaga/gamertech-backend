@@ -113,7 +113,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:5137", "http://127.0.0.1:5173"));
         
         // 2. Define los métodos HTTP permitidos
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         
         // 3. Define las cabeceras (headers) permitidas (importante para Content-Type, Authorization, etc.)
         configuration.setAllowedHeaders(Arrays.asList("*"));
