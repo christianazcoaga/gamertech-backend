@@ -31,10 +31,6 @@ public class Product {
     
     private String image;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-    
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
@@ -124,14 +120,6 @@ public class Product {
     
     public void setImage(String image) {
         this.image = image;
-    }
-    
-    public User getUser() {
-        return user;
-    }
-    
-    public void setUser(User user) {
-        this.user = user;
     }
     
     public LocalDateTime getCreatedAt() {

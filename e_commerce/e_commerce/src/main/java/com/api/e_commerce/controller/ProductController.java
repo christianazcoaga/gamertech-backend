@@ -55,17 +55,20 @@ public class ProductController {
         return ResponseEntity.ok(categories);
     }
     
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ProductDTO>> getProductsByUserId(@PathVariable Long userId) {
-        List<ProductDTO> products = productService.getProductsByUserId(userId);
-        return ResponseEntity.ok(products);
-    }
-    
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequest request) {
         ProductDTO createdProduct = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+    }
+    
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/bulk")
+    public ResponseEntity<List<ProductDTO>> createMultipleProducts(@Valid @RequestBody List<ProductRequest> requests) {
+        List<ProductDTO> createdProducts = requests.stream()
+                .map(productService::createProduct)
+                .toList();
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdProducts);
     }
     
     @PreAuthorize("hasRole('ADMIN')")

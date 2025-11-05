@@ -11,8 +11,6 @@ public class ProductDTO {
     private Double price;
     private Integer stock;
     private String image;
-    private Long userId;
-    private String username;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -21,8 +19,7 @@ public class ProductDTO {
     }
     
     public ProductDTO(Long id, String name, String category, String description, Double price, 
-                     Integer stock, String image, Long userId, String username, 
-                     LocalDateTime createdAt, LocalDateTime updatedAt) {
+                     Integer stock, String image, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -30,8 +27,6 @@ public class ProductDTO {
         this.price = price;
         this.stock = stock;
         this.image = image;
-        this.userId = userId;
-        this.username = username;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -91,22 +86,6 @@ public class ProductDTO {
     
     public void setImage(String image) {
         this.image = image;
-    }
-    
-    public Long getUserId() {
-        return userId;
-    }
-    
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-    
-    public String getUsername() {
-        return username;
-    }
-    
-    public void setUsername(String username) {
-        this.username = username;
     }
     
     public LocalDateTime getCreatedAt() {

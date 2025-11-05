@@ -27,23 +27,19 @@ public class ProductRequest {
     
     private String image;
     
-    // userId es opcional - si no se proporciona, se usa el usuario autenticado
-    private Long userId;
-    
     // Constructors
     public ProductRequest() {
     }
     
     // --- CONSTRUCTOR CORREGIDO ---
     public ProductRequest(String name, Long categoryId, String description, Double price, 
-                         Integer stock, String image, Long userId) {
+                         Integer stock, String image) {
         this.name = name;
-        this.categoryId = categoryId; // Corregido
+        this.categoryId = categoryId;
         this.description = description;
         this.price = price;
         this.stock = stock;
         this.image = image;
-        this.userId = userId;
     }
     
     // Getters and Setters
@@ -94,13 +90,5 @@ public class ProductRequest {
     
     public void setImage(String image) {
         this.image = image;
-    }
-    
-    public Long getUserId() {
-        return userId;
-    }
-    
-    public void setUserId(Long userId) {
-        this.userId = userId;
     }
 }
