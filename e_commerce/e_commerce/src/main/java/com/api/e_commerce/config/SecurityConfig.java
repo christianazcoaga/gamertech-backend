@@ -1,5 +1,7 @@
 package com.api.e_commerce.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,7 +21,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -46,11 +47,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // Consulta de categorías pública
                 .requestMatchers("/h2-console/**").permitAll() // Consola H2
                 
-                // Endpoints de productos
-                .requestMatchers(HttpMethod.POST, "/api/products").authenticated() // Crear productos (USER y ADMIN)
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated() // Editar productos (validación en servicio)
-                .requestMatchers(HttpMethod.PATCH, "/api/products/**").authenticated() // Actualizar stock (validación en servicio)
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated() // Eliminar productos (validación en servicio)
+                // Endpoints de productos (solo ADMIN)
+                .requestMatchers(HttpMethod.POST, "/api/products").hasRole("ADMIN") // Crear producto (ADMIN)
+                .requestMatchers(HttpMethod.POST, "/api/products/bulk").hasRole("ADMIN") // Crear múltiples productos (ADMIN)
+                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN") // Editar productos (ADMIN)
+                .requestMatchers(HttpMethod.PATCH, "/api/products/**").hasRole("ADMIN") // Actualizar stock (ADMIN)
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN") // Eliminar productos (ADMIN)
                 
                 // Endpoints de categorías (solo ADMIN)
                 .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
