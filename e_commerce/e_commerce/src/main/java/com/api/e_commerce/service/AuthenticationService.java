@@ -1,0 +1,108 @@
+package com.api.e_commerce.service;
+
+import com.api.e_commerce.dto.AuthenticationResponse;
+import com.api.e_commerce.dto.LoginRequest;
+import com.api.e_commerce.dto.RegisterRequest;
+import com.api.e_commerce.dto.UserDTO;
+import com.api.e_commerce.model.Role;
+import com.api.e_commerce.model.User;
+import com.api.e_commerce.repository.UserRepository;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+@Transactional
+public class AuthenticationService {
+    
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+    
+    public AuthenticationService(UserRepository userRepository, 
+                                PasswordEncoder passwordEncoder,
+                                AuthenticationManager authenticationManager,
+                                JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+    }
+    
+    public AuthenticationResponse register(RegisterRequest request) {
+        // Validar que el email no exista
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("El correo ya está registrado: " + request.getEmail());
+        }
+        
+        // Validar que el username no exista
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("El nombre de usuario ya existe: " + request.getUsername());
+        }
+        
+        // Crear nuevo usuario
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // Encriptar contraseña
+        user.setName(request.getName());
+        user.setApellido(request.getApellido());
+        user.setRole(Role.USER); // Asignar rol USER por defecto a nuevos usuarios
+        
+        // Guardar usuario
+        User savedUser = userRepository.save(user);
+        
+        // Generar token JWT con claims adicionales (incluye el rol)
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", savedUser.getRole().name());
+        extraClaims.put("userId", savedUser.getId());
+        String jwtToken = jwtService.generateToken(extraClaims, savedUser);
+        
+        // Crear respuesta
+        UserDTO userDTO = mapToDTO(savedUser);
+        return new AuthenticationResponse("Usuario registrado exitosamente", userDTO, jwtToken);
+    }
+    
+    public AuthenticationResponse authenticate(LoginRequest request) {
+        // Autenticar con Spring Security. Dejar que AuthenticationException se propague
+        // y sea manejada por el controlador de excepciones global (`GlobalExceptionHandler`).
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(
+                request.getEmail(),
+                request.getPassword()
+            )
+        );
+
+        // Si llega aquí, la autenticación fue exitosa
+        User user = (User) authentication.getPrincipal();
+
+        // Generar token JWT con claims adicionales (incluye el rol)
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("role", user.getRole().name());
+        extraClaims.put("userId", user.getId());
+        String jwtToken = jwtService.generateToken(extraClaims, user);
+
+        UserDTO userDTO = mapToDTO(user);
+
+        return new AuthenticationResponse("Login exitoso", userDTO, jwtToken);
+    }
+    
+    private UserDTO mapToDTO(User user) {
+        return new UserDTO(
+            user.getId(),
+            user.getUsernameField(),
+            user.getEmail(),
+            user.getName(),
+            user.getApellido(),
+            user.getRole(),
+            user.getCreatedAt()
+        );
+    }
+}
