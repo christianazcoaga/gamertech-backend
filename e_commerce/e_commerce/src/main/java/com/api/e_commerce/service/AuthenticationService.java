@@ -4,6 +4,7 @@ import com.api.e_commerce.dto.AuthenticationResponse;
 import com.api.e_commerce.dto.LoginRequest;
 import com.api.e_commerce.dto.RegisterRequest;
 import com.api.e_commerce.dto.UserDTO;
+import com.api.e_commerce.exception.AuthenticationFailedException;
 import com.api.e_commerce.model.Role;
 import com.api.e_commerce.model.User;
 import com.api.e_commerce.repository.UserRepository;
@@ -95,7 +96,7 @@ public class AuthenticationService {
             return new AuthenticationResponse("Login exitoso", userDTO, jwtToken);
             
         } catch (AuthenticationException e) {
-            throw new IllegalArgumentException("Credenciales inválidas");
+            throw new AuthenticationFailedException("Credenciales inválidas", e);
         }
     }
     

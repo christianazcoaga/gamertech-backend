@@ -7,7 +7,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,14 +54,12 @@ public class ProductController {
         return ResponseEntity.ok(categories);
     }
     
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductRequest request) {
         ProductDTO createdProduct = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
     }
     
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/bulk")
     public ResponseEntity<List<ProductDTO>> createMultipleProducts(@Valid @RequestBody List<ProductRequest> requests) {
         List<ProductDTO> createdProducts = requests.stream()
@@ -71,14 +68,12 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProducts);
     }
     
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @Valid @RequestBody ProductRequest request) {
         ProductDTO updatedProduct = productService.updateProduct(id, request);
         return ResponseEntity.ok(updatedProduct);
     }
     
-    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}/stock")
     public ResponseEntity<ProductDTO> updateStock(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
         Integer newStock = body.get("stock");
@@ -89,7 +84,6 @@ public class ProductController {
         return ResponseEntity.ok(updatedProduct);
     }
     
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);

@@ -46,11 +46,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll() // Consulta de categorías pública
                 .requestMatchers("/h2-console/**").permitAll() // Consola H2
                 
-                // Endpoints de productos
-                .requestMatchers(HttpMethod.POST, "/api/products").authenticated() // Crear productos (USER y ADMIN)
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated() // Editar productos (validación en servicio)
-                .requestMatchers(HttpMethod.PATCH, "/api/products/**").authenticated() // Actualizar stock (validación en servicio)
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated() // Eliminar productos (validación en servicio)
+                // Endpoints de productos (solo ADMIN puede crear, editar y eliminar)
+                .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN") // Crear productos (solo ADMIN)
+                .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN") // Editar productos (solo ADMIN)
+                .requestMatchers(HttpMethod.PATCH, "/api/products/**").hasRole("ADMIN") // Actualizar stock (solo ADMIN)
+                .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN") // Eliminar productos (solo ADMIN)
                 
                 // Endpoints de categorías (solo ADMIN)
                 .requestMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
